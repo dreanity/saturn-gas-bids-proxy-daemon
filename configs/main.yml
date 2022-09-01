@@ -1,0 +1,6 @@
+evm_sources:
+  - node_url: "https://data-seed-prebsc-1-s1.binance.org:8545/"
+    chain_name: "BSC Testnet"
+    contract_address: "0xAE03b286C445269aaFB3169b631c4C042CB5eA32"
+saturn_node_grpc_url: "localhost:9090"
+chain_id: "saturn"

@@ -1,21 +1,18 @@
 package cobra
 
 import (
-	"encoding/hex"
+	"encoding/json"
+	"fmt"
 	"os"
 
-	secp256k1 "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/types"
+	"github.com/dreanity/saturn-gas-bids-proxy-daemon/internal/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 const (
-	EvmWssURL              = "evm-wss-url"
-	GasBidsContractAddress = "gas-bids-contaract-address"
-	TreasurerPrivateKey    = "treasurer-private-key"
-	SaturnNodeGrpcUrl      = "saturn-node-grpc-url"
-	ChainID                = "chain-id"
+	ConfigPath = "config-path"
 )
 
 func InitCmd() {
@@ -24,53 +21,24 @@ func InitCmd() {
 		Use:   "start",
 		Short: "Start saturn daemon and set configs",
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			evmWssURL, err := cmd.Flags().GetString(EvmWssURL)
+			configPath, err := cmd.Flags().GetString(ConfigPath)
 			if err != nil {
 				return err
 			}
 
-			gasBidsContractAddress, err := cmd.Flags().GetString(GasBidsContractAddress)
+			cfg, err := config.Init(configPath)
 			if err != nil {
 				return err
 			}
 
-			pk, err := cmd.Flags().GetString(TreasurerPrivateKey)
+			cfgJson, err := json.Marshal(cfg)
 			if err != nil {
 				return err
 			}
 
-			saturnNodeGrpcUrl, err := cmd.Flags().GetString(SaturnNodeGrpcUrl)
-			if err != nil {
-				return err
-			}
+			fmt.Println(string(cfgJson))
 
-			chainId, err := cmd.Flags().GetString(ChainID)
-			if err != nil {
-				return err
-			}
-
-			pkBytes, err := hex.DecodeString(pk)
-			if err != nil {
-				return err
-			}
-
-			privateKey := secp256k1.PrivKey{Key: pkBytes}
-			pubKey := privateKey.PubKey()
-			accAddress, err := types.AccAddressFromHex(pubKey.Address().String())
-			if err != nil {
-				return err
-			}
-
-			// cfg := daemon.Configs{
-			// 	PrivateKey:  privateKey,
-			// 	PublicKey:   pubKey,
-			// 	NodeGrpcUrl: ngu,
-			// 	DrandUrls:   du,
-			// 	ChainID:     cid,
-			// 	Address:     accAddress,
-			// }
-
-			// if err = daemon.StartDaemon(&cfg); err != nil {
+			// if err = daemon.StartDaemon(cfg); err != nil {
 			// 	return err
 			// }
 
@@ -78,16 +46,8 @@ func InitCmd() {
 		},
 	}
 
-	rootCmd.Flags().StringP(EvmWssURL, "e", "", "Evm websocket url (required)")
-	rootCmd.MarkFlagRequired(GasBidsContractAddress)
-	rootCmd.Flags().StringP(GasBidsContractAddress, "g", "", "Address of the smart contract accepting gas bids (required)")
-	rootCmd.MarkFlagRequired(GasBidsContractAddress)
-	rootCmd.Flags().StringP(TreasurerPrivateKey, "p", "", "The treasurer private key from which the transaction will be sent (required)")
-	rootCmd.MarkFlagRequired(TreasurerPrivateKey)
-	rootCmd.Flags().StringP(SaturnNodeGrpcUrl, "n", "", "A saturn grpc url to the node to which the transaction will be sent (required)")
-	rootCmd.MarkFlagRequired(SaturnNodeGrpcUrl)
-	rootCmd.Flags().StringP(ChainID, "c", "", "Chain identifier (required)")
-	rootCmd.MarkFlagRequired(ChainID)
+	rootCmd.Flags().StringP(ConfigPath, "c", "", "config path (required)")
+	rootCmd.MarkFlagRequired(ConfigPath)
 
 	execute(rootCmd)
 }
