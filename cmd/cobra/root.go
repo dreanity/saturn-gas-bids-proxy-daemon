@@ -1,12 +1,11 @@
 package cobra
 
 import (
-	"encoding/json"
-	"fmt"
 	"os"
 
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/dreanity/saturn-gas-bids-proxy-daemon/internal/config"
+	"github.com/dreanity/saturn-gas-bids-proxy-daemon/internal/daemon"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -31,16 +30,9 @@ func InitCmd() {
 				return err
 			}
 
-			cfgJson, err := json.Marshal(cfg)
-			if err != nil {
+			if err = daemon.StartDaemon(cfg); err != nil {
 				return err
 			}
-
-			fmt.Println(string(cfgJson))
-
-			// if err = daemon.StartDaemon(cfg); err != nil {
-			// 	return err
-			// }
 
 			return nil
 		},
