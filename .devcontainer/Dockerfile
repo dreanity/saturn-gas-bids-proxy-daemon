@@ -7,3 +7,7 @@ FROM mcr.microsoft.com/vscode/devcontainers/go:0-${VARIANT}
 #     && apt-get -y install --no-install-recommends <your-package-list-here>
 
 RUN export GOPRIVATE=github.com/dreanity/saturn
+RUN go install github.com/ethereum/go-ethereum/cmd/abigen@latest
+# RUN	cd $GOPATH/src/github.com/ethereum/go-ethereum/ 
+# RUN	make
+# RUN	make devtools
