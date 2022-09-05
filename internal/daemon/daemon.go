@@ -78,11 +78,11 @@ func StartDaemon(configs *config.Config) error {
 
 				for chainName, evmContract := range evmContracts {
 					counterBig, err := evmContract.GetBidsCounter(nil)
-					counter := counterBig.Uint64()
 					if err != nil {
 						log.Errorf("Get gas bids counter error: %s", err)
 						continue
 					}
+					counter := counterBig.Uint64()
 
 					if counter == 0 {
 						continue
@@ -91,7 +91,7 @@ func StartDaemon(configs *config.Config) error {
 					var gasBid *types.GasBid
 
 					for _, gb := range *gasBids {
-						if gb.FromChain != chainName {
+						if gb.Chain != chainName {
 							continue
 						}
 
@@ -101,8 +101,8 @@ func StartDaemon(configs *config.Config) error {
 
 					if gasBid == nil {
 						gasBid = &types.GasBid{
-							FromChain: chainName,
-							Number:    0,
+							Chain:  chainName,
+							Number: 0,
 						}
 					} else {
 						gasBid.Number++
@@ -116,12 +116,12 @@ func StartDaemon(configs *config.Config) error {
 						}
 
 						msg := types.MsgExecuteGasBid{
-							Creator:    configs.TreasurerAddress.String(),
-							BidNumber:  i,
-							Currency:   bidsEvm.PaymentTokenAddr.String(),
-							PaidAmount: bidsEvm.PaymentAmount.String(),
-							Recipient:  bidsEvm.RecipientAddr,
-							FromChain:  chainName,
+							Creator:      configs.TreasurerAddress.String(),
+							BidNumber:    i,
+							TokenAddress: bidsEvm.PaymentTokenAddr.String(),
+							PaidAmount:   bidsEvm.PaymentAmount.String(),
+							Recipient:    bidsEvm.RecipientAddr,
+							Chain:        chainName,
 						}
 
 						account := getAccount(grpcConn, configs.TreasurerAddress.String())

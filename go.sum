@@ -507,6 +507,8 @@ github.com/drand/kyber-bls12381 v0.2.2 h1:MsqhbRUNIziZVGg5nT/AgZFXjKSc4Vd8jkBC0Y
 github.com/drand/kyber-bls12381 v0.2.2/go.mod h1:FsudUZf6Xu61u/gYrDHEHf6lKIKluJdnX7WJe4hkMh4=
 github.com/dreanity/saturn v0.0.0-20220825142812-a9e0487b0394 h1:oMZcfYOnBlKLw1KXDY89694eHgFdkwvknBoB+gkMNnk=
 github.com/dreanity/saturn v0.0.0-20220825142812-a9e0487b0394/go.mod h1:JPaq8LmOhkOvJC52uMh4B6lVogZ7IQBVcyrkZEuifYM=
+github.com/dreanity/saturn v0.0.0-20220905140936-6d0900b77b60 h1:uyfDh5fh/UJyw2Xt1i4gH6I9ytlIaG/cULt43mN8FSU=
+github.com/dreanity/saturn v0.0.0-20220905140936-6d0900b77b60/go.mod h1:JPaq8LmOhkOvJC52uMh4B6lVogZ7IQBVcyrkZEuifYM=
 github.com/dustin/go-humanize v0.0.0-20171111073723-bb3d318650d4/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/dustin/go-humanize v1.0.1-0.20200219035652-afde56e7acac h1:opbrjaN/L8gg6Xh5D04Tem+8xVcz6ajZlGCs49mQgyg=

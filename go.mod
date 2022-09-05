@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/cosmos/cosmos-sdk v0.45.4
-	github.com/dreanity/saturn v0.0.0-20220825142812-a9e0487b0394
+	github.com/dreanity/saturn v0.0.0-20220905140936-6d0900b77b60
 	github.com/ethereum/go-ethereum v1.10.23
 	github.com/joho/godotenv v1.4.0
 	github.com/sirupsen/logrus v1.9.0
