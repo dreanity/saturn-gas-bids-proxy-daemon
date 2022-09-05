@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"context"
 	"math/big"
 	"os"
 	"os/signal"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/dreanity/saturn-gas-bids-proxy-daemon/internal/config"
 	gasbidscontract "github.com/dreanity/saturn-gas-bids-proxy-daemon/internal/gas_bids_contract"
+	"github.com/dreanity/saturn-gas-bids-proxy-daemon/internal/saturn"
 
 	"github.com/dreanity/saturn/x/treasury/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -62,12 +64,13 @@ func StartDaemon(configs *config.Config) error {
 
 				for {
 					<-tickerGasBid.C
-					gasBids, paginationKey = getGasBids(grpcConn, paginationKey)
+					gasBids, pagk := getGasBids(grpcConn, paginationKey)
 					log.Infoln(gasBids, paginationKey)
 					if gasBids == nil {
 						log.Warnln("Gas bids is nil or PaginationKey is nil")
 						continue
 					}
+					paginationKey = pagk
 
 					ticker.Stop()
 					break
@@ -120,8 +123,30 @@ func StartDaemon(configs *config.Config) error {
 							Recipient:  bidsEvm.RecipientAddr,
 							FromChain:  chainName,
 						}
-					}
 
+						account := getAccount(grpcConn, configs.TreasurerAddress.String())
+
+						if account == nil {
+							log.Errorf("Base account is nil")
+							break
+						}
+
+						err = saturn.SendExecuteGasBidMsg(
+							context.Background(),
+							grpcConn,
+							configs.TreasurerPrivateKey,
+							configs.TreasurerPublicKey,
+							(*account).GetAccountNumber(),
+							(*account).GetSequence(),
+							configs.ChainID,
+							&msg,
+						)
+
+						if err != nil {
+							log.Errorf("Send execute gas bid msg error: %s", err)
+							break
+						}
+					}
 				}
 			case <-stop:
 				log.Info("Stopping the deamon")
