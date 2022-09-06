@@ -51,6 +51,7 @@ func StartDaemon(configs *config.Config) error {
 
 	ticker := time.NewTicker(time.Second)
 	stop := make(chan bool)
+	stopped := false
 
 	go func() {
 		defer func() { stop <- true }()
@@ -58,31 +59,41 @@ func StartDaemon(configs *config.Config) error {
 			select {
 			case <-ticker.C:
 				var paginationKey []byte
-				var gasBids *[]types.GasBid
+				gasBids := make([]types.GasBid, 0)
 
 				tickerGasBid := time.NewTicker(time.Second)
-
 				for {
+					if stopped {
+						tickerGasBid.Stop()
+						break
+					}
+
 					<-tickerGasBid.C
-					gasBids, pagk := getGasBids(grpcConn, paginationKey)
-					log.Infoln(gasBids, paginationKey)
+					gb, pagk := getGasBids(grpcConn, paginationKey)
+					log.Infoln(*gb, paginationKey)
 					if gasBids == nil {
 						log.Warnln("Gas bids is nil or PaginationKey is nil")
 						continue
 					}
 					paginationKey = pagk
+					gasBids = *gb
 
-					ticker.Stop()
+					tickerGasBid.Stop()
 					break
 				}
 
 				for chainName, evmContract := range evmContracts {
+					log.Infof("process %s chain", chainName)
+
 					counterBig, err := evmContract.GetBidsCounter(nil)
+
 					if err != nil {
 						log.Errorf("Get gas bids counter error: %s", err)
 						continue
 					}
+
 					counter := counterBig.Uint64()
+					log.Infof("recieved %d bids count", counter)
 
 					if counter == 0 {
 						continue
@@ -90,7 +101,7 @@ func StartDaemon(configs *config.Config) error {
 
 					var gasBid *types.GasBid
 
-					for _, gb := range *gasBids {
+					for _, gb := range gasBids {
 						if gb.Chain != chainName {
 							continue
 						}
@@ -109,19 +120,23 @@ func StartDaemon(configs *config.Config) error {
 					}
 
 					for i := gasBid.Number; i < counter; i++ {
+						log.Infof("try request bid #%d from %s chain", i, chainName)
 						bidsEvm, err := evmContract.Bids(nil, big.NewInt(int64(i)))
+
 						if err != nil {
 							log.Errorf("Bids evm contract request by index %d error: %s", i, err)
 							break
 						}
 
+						log.Infof("bid #%d received from %s chain", i, chainName)
 						msg := types.MsgExecuteGasBid{
 							Creator:      configs.TreasurerAddress.String(),
 							BidNumber:    i,
-							TokenAddress: bidsEvm.PaymentTokenAddr.String(),
+							TokenAddress: bidsEvm.PaymentAmount.String(),
 							PaidAmount:   bidsEvm.PaymentAmount.String(),
 							Recipient:    bidsEvm.RecipientAddr,
 							Chain:        chainName,
+							Scale:        uint32(bidsEvm.PaymentTokenScale),
 						}
 
 						account := getAccount(grpcConn, configs.TreasurerAddress.String())
@@ -131,16 +146,20 @@ func StartDaemon(configs *config.Config) error {
 							break
 						}
 
+						log.Infof("account received %v", account)
+
 						err = saturn.SendExecuteGasBidMsg(
 							context.Background(),
 							grpcConn,
 							configs.TreasurerPrivateKey,
 							configs.TreasurerPublicKey,
-							(*account).GetAccountNumber(),
 							(*account).GetSequence(),
+							(*account).GetAccountNumber(),
 							configs.ChainID,
 							&msg,
 						)
+
+						log.Infoln("send execute gas bid msg")
 
 						if err != nil {
 							log.Errorf("Send execute gas bid msg error: %s", err)
@@ -159,8 +178,8 @@ func StartDaemon(configs *config.Config) error {
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
 
+	stopped = true
 	ticker.Stop()
-
 	stop <- true
 
 	<-stop

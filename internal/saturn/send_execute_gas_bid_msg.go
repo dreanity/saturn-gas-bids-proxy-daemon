@@ -13,6 +13,7 @@ import (
 	"github.com/dreanity/saturn/app"
 	"github.com/dreanity/saturn/x/treasury/types"
 	"github.com/ignite/cli/ignite/pkg/cosmoscmd"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
@@ -95,7 +96,7 @@ func SendExecuteGasBidMsg(
 		return err
 	}
 
-	_ = res
+	log.Infoln("response send execute gas: %v", res)
 
 	return nil
 }

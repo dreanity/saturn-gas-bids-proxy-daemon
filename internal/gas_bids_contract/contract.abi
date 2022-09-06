@@ -48,6 +48,12 @@
       },
       {
         "indexed": false,
+        "internalType": "uint8",
+        "name": "paymentTokenScale",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "paymentAmount",
         "type": "uint256"
@@ -121,6 +127,11 @@
         "internalType": "address",
         "name": "paymentTokenAddr",
         "type": "address"
+      },
+      {
+        "internalType": "uint8",
+        "name": "paymentTokenScale",
+        "type": "uint8"
       },
       {
         "internalType": "uint256",
